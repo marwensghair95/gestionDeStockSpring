@@ -10,16 +10,15 @@ import java.io.Serializable;
 @Table(name = "roles")
 @NoArgsConstructor
 @RequiredArgsConstructor
+@EqualsAndHashCode(exclude = {"users"})
 public class Role implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Setter(value = AccessLevel.NONE)
-    private Integer _id;
+    private long id;
 
     @NonNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "name")
+    @Column(length = 15)
     private ERole name;
-
-
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.Null;
+import java.util.List;
 
 
 @Data
@@ -13,12 +13,12 @@ import javax.validation.constraints.Null;
 @Table(name = "produits")
 @NoArgsConstructor
 @RequiredArgsConstructor
-@EqualsAndHashCode(exclude = {"pack"})
+//@EqualsAndHashCode(exclude = {"pack"})
 public class Produit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Setter(value = AccessLevel.NONE)
-    private int id;
+    private long id;
 
     @NonNull
     @Column(name = "refProduit")
@@ -28,13 +28,13 @@ public class Produit {
     private String nameProduit;
     @NonNull
     @Column(name = "qteProduit")
-    private String qteProduit;
+    private int qteProduit;
     @NonNull
     @Column(name = "prixDachat")
-    private String prixDachat;
+    private double prixDachat;
     @NonNull
     @Column(name = "prixVente")
-    private String prixVente;
+    private double prixVente;
     @NonNull
     @Column(name = "idFournisseur")
     private String idFournisseur;
@@ -43,8 +43,8 @@ public class Produit {
     private String idCat;
 
     // OneToMany Relations
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name="pack_id", nullable = false)
-    private Pack pack;
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL)
+//    private List<Produit> produits;
+
 }

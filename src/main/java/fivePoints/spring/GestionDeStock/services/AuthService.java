@@ -5,36 +5,59 @@ import fivePoints.spring.GestionDeStock.exceptions.ResourceNotFoundException;
 import fivePoints.spring.GestionDeStock.models.ERole;
 import fivePoints.spring.GestionDeStock.models.Role;
 import fivePoints.spring.GestionDeStock.models.User;
+import fivePoints.spring.GestionDeStock.payload.requests.LoginRequest;
 import fivePoints.spring.GestionDeStock.payload.requests.RegisterRequest;
 import fivePoints.spring.GestionDeStock.repositories.RoleRepository;
 import fivePoints.spring.GestionDeStock.repositories.UserRepository;
+
+
+import fivePoints.spring.GestionDeStock.security.jwt.JwtTokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class UserService {
+public class AuthService {
+
     @Autowired
     UserRepository userRepository;
 
     @Autowired
     RoleRepository roleRepository;
 
+//     pour crypter le password (NB: il faut ajouter le bean BCryptPasswordEncoder dans l'application)
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    public String addUser(RegisterRequest registerRequest) {
+    @Autowired
+    AuthenticationManager authenticationManager;
 
+    @Autowired
+    JwtTokenUtils jwtTokenUtils;
+
+    public String login(LoginRequest loginRequest)
+    {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return this.jwtTokenUtils.generateToken(userDetails);
+    }
+
+    public String register(RegisterRequest registerRequest) throws EmailAlreadyUsedException {
         // test if email already used
-//        if (this.userRepository.existsByEmail(registerRequest.getEmail())) {
-//            throw new EmailAlreadyUsedException("Error: Email is already in use!");
-//        }
+        if (this.userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new EmailAlreadyUsedException("Error: Email is already in use!");
+        }
         // Create new user account
         User user = new User();
         user.setFirstName(registerRequest.getFirstName());
@@ -83,69 +106,4 @@ public class UserService {
         this.userRepository.save(user);
         return "User registered successfully!";
     }
-
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public User getUserByID(long  id) {
-        Optional<User> userData =  userRepository.findById(id);
-        return userData.orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }
-
-    public String updateUserByID(long  id, User user)
-    {
-        Optional<User> userData = this.userRepository.findById(id);
-        if (userData.isPresent()) {
-            User existingUser = userData.orElse(null);
-            existingUser.setFirstName(user.getFirstName());
-            existingUser.setLastName(user.getLastName());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setPassword(user.getPassword());
-            // save existingUser in the database
-            this.userRepository.save(existingUser);
-            // return statement
-            return "User updated successfully!";
-        } else {
-            throw new ResourceNotFoundException("User not found");
-        }
-    }
-
-    public String deleteUserByID(long id) {
-        Optional<User> existingUser = userRepository.findById(id);
-        if (existingUser.isPresent()) {
-            userRepository.delete(existingUser.get());
-            return "User deleted successfully!";
-        } else {
-            throw new ResourceNotFoundException("User not found");
-        }
-    }
-    // Affecter Role to user
-    public String affectUserToRole(long idUser, long idRole) {
-        Optional<User> userData = this.userRepository.findById(idUser);
-        if (userData.isPresent()) {
-            User existingUser = userData.orElseThrow(() -> new ResourceNotFoundException("User not found"));
-            Optional<Role> roleData = this.roleRepository.findById(idRole);
-            if (roleData.isPresent()) {
-                Role existingRole = roleData.orElseThrow(() -> new ResourceNotFoundException("Role not found"));
-                Set<Role> roles = existingUser.getRoles();
-                roles.add(existingRole);
-                existingUser.setRoles(roles);
-                this.userRepository.save(existingUser);
-            }
-        }
-        return "User affected to role successfully!";
-    }
-    @Transactional(readOnly = true)
-    public User findByEmail(String email) {
-        User user = null;
-        try {
-            user = userRepository.findByEmail(email);
-        } catch (Exception e) {
-            throw e;
-        }
-        return user;
-    }
-
 }

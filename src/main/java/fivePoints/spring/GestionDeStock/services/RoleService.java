@@ -12,54 +12,51 @@ import java.util.Optional;
 
 @Service
 public class RoleService {
-    private final RoleRepository roleRepository;
 
     @Autowired
-    public RoleService(RoleRepository repository) {
-        this.roleRepository = repository;
+    RoleRepository roleRepository;
+
+    public Role saveNewRole(Role role)
+    {
+        return this.roleRepository.save(role);
     }
 
-
-
-    public List<Role> getAllRole(){
-        return roleRepository.findAll();
+    public List<Role> getAllRoles()
+    {
+        return this.roleRepository.findAll();
     }
 
-    public String savenewRole(Role newRole){
-        roleRepository.save(newRole);
-        return "Role added successfully";
-    }
-
-    public Role getPostById(Integer id){
-        Optional<Role> roleData = roleRepository.findById(id);
+    public Role findRoleByID(long id)
+    {
+        Optional<Role> roleData = this.roleRepository.findById(id);
+        // Return statement if user exist or null
         return roleData.orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
     }
 
-
-    public String delete(Integer id) {
-
-        Optional<Role> existingRole = roleRepository.findById(id);
-        if (existingRole.isPresent()) {
-            roleRepository.delete(existingRole.get());
-        return "Role deleted successfully!";
-    } else {
-        throw new ResourceNotFoundException("Role not found");
-    }
-    }
-
-    public String update(Role newRole, Integer id) {
+    public String updateRoleByID(long id, Role role)
+    {
         Optional<Role> roleData = this.roleRepository.findById(id);
         if (roleData.isPresent()) {
             Role existingRole = roleData.orElse(null);
-            existingRole.setName(newRole.getName());
-            // save existingUser in the database
+            existingRole.setName(role.getName());
+            // save existing User in the database
             this.roleRepository.save(existingRole);
             // return statement
-            return "User updated successfully!";
+            return "Role updated successfully!";
         } else {
-            throw new ResourceNotFoundException("User not found");
+            throw new ResourceNotFoundException("Role not found");
         }
     }
 
-
+    public String deleteRoleById(long id)
+    {
+        Optional<Role> roleData = this.roleRepository.findById(id);
+        if (roleData.isPresent()) {
+            this.roleRepository.deleteById(id);
+            return "Role deleted successfully!";
+        } else {
+            throw new ResourceNotFoundException("Role not found");
+        }
+    }
 }

@@ -23,13 +23,13 @@ public class ProduitService {
         return produitRepository.findAll();
     }
 
-    public Produit getProduitByID(int id) {
+    public Produit getProduitByID(long id) {
         Optional<Produit> userData =  produitRepository.findById(id);
         return userData.orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
 
-    public String updateProduitByID(int id, Produit produit)
+    public String updateProduitByID(long id, Produit produit)
     {
         Optional<Produit> produitData = this.produitRepository.findById(id);
         if (produitData.isPresent()) {
@@ -45,7 +45,7 @@ public class ProduitService {
         }
     }
 
-    public String deleteProduitByID(int id) {
+    public String deleteProduitByID(long id) {
         Optional<Produit> existingUser = produitRepository.findById(id);
         if (existingUser.isPresent()) {
             produitRepository.delete(existingUser.get());

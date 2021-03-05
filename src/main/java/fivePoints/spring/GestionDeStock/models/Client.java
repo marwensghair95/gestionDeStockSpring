@@ -14,7 +14,7 @@ public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Setter(value = AccessLevel.NONE)
-    private int idClient;
+    private int id;
 
     @NonNull
     @Column(name = "nameClient")

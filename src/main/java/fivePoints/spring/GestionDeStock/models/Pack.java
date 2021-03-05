@@ -1,22 +1,21 @@
 package fivePoints.spring.GestionDeStock.models;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.*;
-import org.hibernate.annotations.SortNatural;
+
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+
 
 @Data
 @Entity
 @Table(name = "packs")
 @NoArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(exclude = {"produits"})
 public class Pack {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Setter(value = AccessLevel.NONE)
     private int id;
 
     @NonNull
@@ -26,9 +25,10 @@ public class Pack {
     @Column(name = "namePack")
     private String namePack;
 
+
+
     // OneToMany Relations
-    @JsonIgnore
-    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @SortNatural
-    private Set<Produit> produits = new HashSet<>();
+//    @ManyToOne
+//    @JoinColumn(name="produit_Name")
+//    private Produit produit;
 }

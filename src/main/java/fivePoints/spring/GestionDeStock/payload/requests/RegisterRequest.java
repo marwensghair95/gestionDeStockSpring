@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 import java.util.Set;
 
 @Data
-public class SingupRequest {
+public class RegisterRequest {
     @NotBlank
     @Size(min = 3, max = 255)
     private String firstName;

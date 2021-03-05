@@ -2,38 +2,40 @@ package fivePoints.spring.GestionDeStock.controllers;
 
 
 import fivePoints.spring.GestionDeStock.models.Commande;
+import fivePoints.spring.GestionDeStock.payload.requests.CommandeRequest;
 import fivePoints.spring.GestionDeStock.payload.responses.MessageResponse;
 import fivePoints.spring.GestionDeStock.services.CommandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 //@CrossOrigin(origins="http://localhost:4200/")
 @RestController
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/commandes")
 public class CommandeController {
 
     @Autowired
     CommandeService commandeService;
 
     @PostMapping("/addCommande")
-    public ResponseEntity<MessageResponse> addCommande(@RequestBody Commande commande) {
+    public ResponseEntity<MessageResponse> addCommande(@RequestBody CommandeRequest commande) {
         String message = commandeService.addCommande(commande);
         return ResponseEntity.ok().body(new MessageResponse(message));
     }
 
 
-    @GetMapping("/allCommandes")
-    @ResponseBody
+    @GetMapping("/allcommande")
+    @PreAuthorize(" hasRole('USER') ")
     public ResponseEntity<List<Commande>> getAllUsers() {
-        List<Commande> listUsers = this.commandeService.getAllCommandes();
-        return new ResponseEntity<>(listUsers, HttpStatus.OK);
+        List<Commande> listCommande = this.commandeService.getAllCommandes();
+        return new ResponseEntity<>(listCommande, HttpStatus.OK);
     }
 
-    @GetMapping("getCommanderById/{id}")
+    @GetMapping("getCommandeById/{id}")
     public ResponseEntity<Commande> getCommandeByID(@PathVariable(value="id") int id) {
         Commande user = commandeService.getCommandeByID(id);
         if(user == null) {
