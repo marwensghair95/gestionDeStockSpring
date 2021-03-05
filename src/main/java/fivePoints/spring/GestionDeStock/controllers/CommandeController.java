@@ -29,7 +29,7 @@ public class CommandeController {
 
 
     @GetMapping("/allcommande")
-    @PreAuthorize(" hasRole('USER') ")
+//    @PreAuthorize(" hasRole('USER') ")
     public ResponseEntity<List<Commande>> getAllUsers() {
         List<Commande> listCommande = this.commandeService.getAllCommandes();
         return new ResponseEntity<>(listCommande, HttpStatus.OK);
@@ -54,6 +54,11 @@ public class CommandeController {
     public ResponseEntity<MessageResponse> deleteCommandeByID(@PathVariable(value="id") int command) {
         String message = commandeService.deleteCommandeByID(command);
         return ResponseEntity.ok().body(new MessageResponse(message));
+    }
 
+    @PutMapping("updateQte/{id}")
+    public  ResponseEntity<MessageResponse>updateQte(@PathVariable(value="id") int id) {
+        String message =  commandeService.updateQte(id);
+        return new ResponseEntity<>(new MessageResponse(message), HttpStatus.OK);
     }
 }

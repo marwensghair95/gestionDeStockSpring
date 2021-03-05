@@ -1,10 +1,7 @@
 package fivePoints.spring.GestionDeStock.services;
 
 import fivePoints.spring.GestionDeStock.exceptions.ResourceNotFoundException;
-import fivePoints.spring.GestionDeStock.models.Client;
-import fivePoints.spring.GestionDeStock.models.Commande;
-import fivePoints.spring.GestionDeStock.models.CommandeItem;
-import fivePoints.spring.GestionDeStock.models.Produit;
+import fivePoints.spring.GestionDeStock.models.*;
 import fivePoints.spring.GestionDeStock.payload.requests.CommandeRequest;
 import fivePoints.spring.GestionDeStock.repositories.ClientRepository;
 import fivePoints.spring.GestionDeStock.repositories.CommandeItemRespository;
@@ -89,12 +86,46 @@ public class CommandeService {
     }
 
     public String deleteCommandeByID(int id) {
-        Optional<Commande> existingUser = commandeRepository.findById(id);
-        if (existingUser.isPresent()) {
-            commandeRepository.delete(existingUser.get());
+        Optional<Commande> existingCommande = commandeRepository.findById(id);
+        if (existingCommande.isPresent()) {
+
+            Commande commande = existingCommande.orElse(null);
+            for (CommandeItem p: commande.getCommandeItems()) {
+                Optional<CommandeItem> ligneCommande = commandeItemRespository.findById(p.getId());
+                 commandeRepository.delete(commande);
+                 commandeItemRespository.delete(ligneCommande.get());
+
+            }
             return "Commande deleted successfully!";
-        } else {
+            }else {
             throw new ResourceNotFoundException("Commande not found");
+        }
+
+    }
+
+    public String updateQte(int id)
+    {
+        Optional<Commande> existingCommande = commandeRepository.findById(id);
+
+        if (existingCommande.isPresent()) {
+            Commande commande = existingCommande.orElse(null);
+            for(CommandeItem p:commande.getCommandeItems()){
+                Optional<Produit> produit =  produitRepository.findById(p.getProduit().getId());
+                Produit existingProduit = produit.orElse(null);
+              if (existingProduit.getQteProduit()<p.getQuantity()){
+                  return "Quantite Produit '"+existingProduit.getNameProduit()+"' èpuise !";
+              } else{
+                  existingProduit.setQteProduit(existingProduit.getQteProduit()-p.getQuantity());
+                  this.produitRepository.save(existingProduit);
+              }
+
+
+   }
+            commande.setValide(true);
+            this.commandeRepository.saveAndFlush(commande);
+            return "commande updated successfully!";
+        } else {
+            throw new ResourceNotFoundException("commande not found");
         }
     }
 }
