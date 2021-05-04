@@ -28,15 +28,12 @@ public class CommandeService {
     ClientRepository clientRepository;
 
     public String addCommande(CommandeRequest commande) {
-
         Optional<Client> client =clientRepository.findById(commande.getIdClient());
-
         Commande newCommande =new Commande();
         newCommande.setRefCommande(commande.getRefCommande());
         newCommande.setClient(client.get());
         newCommande.setDate_commande(commande.getDate_commande());
         newCommande.setValide(commande.getValide());
-//        newCommande.setMontant_total(commande.getMontant_total());
         double total=0;
        Commande com= commandeRepository.save(newCommande);
 
@@ -44,14 +41,12 @@ public class CommandeService {
             CommandeItem commandeItem=new CommandeItem();
             commandeItem.setCommande(com);
             Optional<Produit> produit =  produitRepository.findById(p.getIdP());
-//            System.out.println(produit);
             commandeItem.setProduit(produit.get());
             commandeItem.setPrice(produit.get().getPrixVente()*p.getQuantity());
            commandeItem.setQuantity(p.getQuantity());
             commandeItemRespository.save(commandeItem);
              total+=p.getQuantity()*produit.get().getPrixVente();
         }
-//        System.out.println(total);
        com.setMontant_total(total);
         commandeRepository.saveAndFlush(com);
         return "Commande added successfully";
@@ -67,20 +62,35 @@ public class CommandeService {
     }
 
 
-    public String updateCommandeByID(int id, Commande commande)
+    public String updateCommandeByID(int id, CommandeRequest commande)
     {
-        Optional<Commande> CommandeData = this.commandeRepository.findById(id);
-        if (CommandeData.isPresent()) {
-            Commande existingUser = CommandeData.orElse(null);
-//            existingUser.setFirstName(client.getFirstName());
-//            existingUser.setLastName(user.getLastName());
-//            existingUser.setEmail(user.getEmail());
-//            existingUser.setPassword(user.getPassword());
-            // save existingUser in the database
-            this.commandeRepository.save(existingUser);
-            // return statement
-            return "Commande updated successfully!";
-        } else {
+        Optional<Commande> commandeData = this.commandeRepository.findById(id);
+        if (commandeData.isPresent()) {
+            Commande newCommande = commandeData.orElse(null);
+            Optional<Client> client =clientRepository.findById(commande.getIdClient());
+            newCommande.setRefCommande(commande.getRefCommande());
+            newCommande.setClient(client.get());
+            newCommande.setDate_commande(commande.getDate_commande());
+//            double total=0;
+           for(CommandeItem p:newCommande.getCommandeItems()){
+
+           CommandeItem ligneCommandes = commandeItemRespository.getOne(p.getId());
+
+
+               System.out.println("commnd item"+ligneCommandes);
+//                ligneCommande.setCommande(newCommande);
+//                Optional<Produit> produit =  produitRepository.findById(p.getIdP());
+//                ligneCommande.setProduit(produit.get());
+//                ligneCommande.setPrice(produit.get().getPrixVente()*p.getQuantity());
+//                ligneCommande.setQuantity(p.getQuantity());
+//                this.commandeItemRespository.saveAndFlush(ligneCommande);
+//                total+=p.getQuantity()*produit.get().getPrixVente();
+            }
+//            newCommande.setMontant_total(total);
+            this.commandeRepository.saveAndFlush(newCommande);
+            return "Commande added successfully";
+        }
+        else {
             throw new ResourceNotFoundException("Commande not found");
         }
     }
@@ -88,39 +98,48 @@ public class CommandeService {
     public String deleteCommandeByID(int id) {
         Optional<Commande> existingCommande = commandeRepository.findById(id);
         if (existingCommande.isPresent()) {
-
             Commande commande = existingCommande.orElse(null);
-            for (CommandeItem p: commande.getCommandeItems()) {
-                Optional<CommandeItem> ligneCommande = commandeItemRespository.findById(p.getId());
-                 commandeRepository.delete(commande);
-                 commandeItemRespository.delete(ligneCommande.get());
+            if (commande.getValide() == false) {
+                for (CommandeItem p : commande.getCommandeItems()) {
+                    Optional<CommandeItem> ligneCommandes = commandeItemRespository.findById(p.getId());
+                    CommandeItem ligneCommande = ligneCommandes.orElse(null);
+                    commandeRepository.delete(commande);
+                    commandeItemRespository.delete(ligneCommande);
 
+                }
+                return "Commande deleted successfully!";
             }
-            return "Commande deleted successfully!";
-            }else {
-            throw new ResourceNotFoundException("Commande not found");
+                else {
+                    return "Commande validé !";
+                }
+            } else {
+                throw new ResourceNotFoundException("Commande not found");
+            }
         }
 
-    }
+
 
     public String updateQte(int id)
     {
         Optional<Commande> existingCommande = commandeRepository.findById(id);
-
         if (existingCommande.isPresent()) {
             Commande commande = existingCommande.orElse(null);
+            //verfier Qte stock
             for(CommandeItem p:commande.getCommandeItems()){
                 Optional<Produit> produit =  produitRepository.findById(p.getProduit().getId());
                 Produit existingProduit = produit.orElse(null);
-              if (existingProduit.getQteProduit()<p.getQuantity()){
-                  return "Quantite Produit '"+existingProduit.getNameProduit()+"' èpuise !";
-              } else{
-                  existingProduit.setQteProduit(existingProduit.getQteProduit()-p.getQuantity());
-                  this.produitRepository.save(existingProduit);
+                if (existingProduit.getQteProduit()<p.getQuantity()){
+                    return "Quantite Produit '"+existingProduit.getNameProduit()+"' èpuise !";
+                }
               }
-
-
-   }
+        //update qte
+        for (CommandeItem p : commande.getCommandeItems()) {
+            Optional<Produit> produit = produitRepository.findById(p.getProduit().getId());
+            Produit existingProduit = produit.orElse(null);
+            existingProduit.setQteProduit(existingProduit.getQteProduit() - p.getQuantity());
+            this.produitRepository.save(existingProduit);
+        }
+        //valide commande
             commande.setValide(true);
             this.commandeRepository.saveAndFlush(commande);
             return "commande updated successfully!";

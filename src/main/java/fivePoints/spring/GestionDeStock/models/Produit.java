@@ -1,6 +1,7 @@
 package fivePoints.spring.GestionDeStock.models;
 
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -43,8 +44,8 @@ public class Produit {
     private String idCat;
 
     // OneToMany Relations
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL)
-//    private List<Produit> produits;
+    @JsonIgnore
+    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL)
+    private List<Produit> produits;
 
 }

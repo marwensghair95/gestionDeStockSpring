@@ -8,7 +8,6 @@ import fivePoints.spring.GestionDeStock.services.CommandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,7 +44,7 @@ public class CommandeController {
     }
 
     @PutMapping("updateCommande/{id}")
-    public  ResponseEntity<MessageResponse> updateUserByID(@PathVariable(value="id") int id, @RequestBody Commande commande) {
+    public  ResponseEntity<MessageResponse> updateUserByID(@PathVariable(value="id") int id, @RequestBody CommandeRequest commande) {
         String message =  commandeService.updateCommandeByID(id, commande);
         return new ResponseEntity<>(new MessageResponse(message), HttpStatus.OK);
     }

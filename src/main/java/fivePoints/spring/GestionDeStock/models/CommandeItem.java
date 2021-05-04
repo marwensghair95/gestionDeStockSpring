@@ -19,7 +19,7 @@ import java.util.Map;
 public class CommandeItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne
     private Produit produit;
